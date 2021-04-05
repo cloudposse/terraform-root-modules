@@ -14,7 +14,7 @@ cluster_endpoint_private_access = true
 
 cluster_endpoint_public_access = true
 
-cluster_kubernetes_version = "1.17"
+cluster_kubernetes_version = "1.18"
 
 enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 

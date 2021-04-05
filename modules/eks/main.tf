@@ -1,8 +1,8 @@
 locals {
-  primary_role_map   = data.terraform_remote_state.primary_roles.outputs.role_name_role_arn_map
-  delegated_role_map = data.terraform_remote_state.delegated_roles.outputs.role_name_role_arn_map
-  eks_outputs        = data.terraform_remote_state.eks.outputs
-  vpc_outputs        = data.terraform_remote_state.vpc.outputs
+  primary_role_map   = module.primary_roles.outputs.role_name_role_arn_map
+  delegated_role_map = module.delegated_roles.outputs.role_name_role_arn_map
+  eks_outputs        = module.eks.outputs
+  vpc_outputs        = module.vpc.outputs
 
   attributes         = flatten(concat(module.this.attributes, [var.color]))
   public_subnet_ids  = local.vpc_outputs.public_subnet_ids
@@ -22,10 +22,17 @@ locals {
   }]
 
   map_additional_iam_roles = concat(local.primary_iam_roles, local.delegated_iam_roles)
+  managed_worker_role_arns = local.eks_outputs.eks_managed_node_workers_role_arns
+  worker_role_arns = compact(concat([
+    module.spotinst_role.outputs.workers_role_arn
+  ], var.map_additional_worker_roles, local.managed_worker_role_arns))
+
+  subnet_type_tag_key = var.subnet_type_tag_key != null ? var.subnet_type_tag_key : local.vpc_outputs.vpc.subnet_type_tag_key
 }
 
 module "eks_cluster" {
-  source = "git::https://github.com/cloudposse/terraform-aws-eks-cluster.git?ref=tags/0.29.0"
+  source  = "cloudposse/eks-cluster/aws"
+  version = "0.34.1"
 
   region     = var.region
   attributes = local.attributes
@@ -78,59 +85,7 @@ module "eks_cluster" {
   # when they are created. However, after they are created, they will not be replaced if they are
   # later removed, and in step 3 we replace the entire configMap. So we have to add the pre-existing
   # managed node groups here, and we get that by reading our current (pre plan or apply) Terraform state.
-  workers_role_arns = compact(concat(local.eks_outputs.eks_managed_node_workers_role_arns))
-
-  context = module.this.context
-}
-
-locals {
-  node_group_default_availability_zones = var.node_group_defaults.availability_zones == null ? var.region_availability_zones : var.node_group_defaults.availability_zones
-  node_group_default_kubernetes_version = var.node_group_defaults.kubernetes_version == null ? var.cluster_kubernetes_version : var.node_group_defaults.kubernetes_version
-
-  # values(module.region_node_group) is an array of `region_node_group` objects
-  # values(module.region_node_group)[*].region_node_groups is an array of
-  #   maps with keys availability zones and values the output map of terraform-aws-eks-node-group
-  # node_groups is a flattened array of output maps of terraform-aws-eks-node-group
-  node_groups = flatten([for m in values(module.region_node_group)[*].region_node_groups : values(m)])
-
-  # node_group_arns is a list of all the node group ARNs in the cluster
-  node_group_arns      = compact([for group in local.node_groups : group.eks_node_group_arn])
-  node_group_role_arns = compact([for group in local.node_groups : group.eks_node_group_role_arn])
-}
-
-module "region_node_group" {
-  for_each = module.this.enabled ? var.node_groups : {}
-
-  source = "./modules/node_group_by_region"
-
-  availability_zones = each.value.availability_zones == null ? local.node_group_default_availability_zones : each.value.availability_zones
-  attributes         = flatten(concat(var.attributes, [each.key], [var.color], each.value.attributes == null ? var.node_group_defaults.attributes : each.value.attributes))
-
-  node_group_size = module.this.enabled ? {
-    desired_size = each.value.desired_group_size == null ? var.node_group_defaults.desired_group_size : each.value.desired_group_size
-    min_size     = each.value.min_group_size == null ? var.node_group_defaults.min_group_size : each.value.min_group_size
-    max_size     = each.value.max_group_size == null ? var.node_group_defaults.max_group_size : each.value.max_group_size
-  } : null
-
-  cluster_context = module.this.enabled ? {
-    cluster_name              = module.eks_cluster.eks_cluster_id
-    create_before_destroy     = each.value.create_before_destroy == null ? var.node_group_defaults.create_before_destroy : each.value.create_before_destroy
-    disk_size                 = each.value.disk_size == null ? var.node_group_defaults.disk_size : each.value.disk_size
-    enable_cluster_autoscaler = each.value.enable_cluster_autoscaler == null ? var.node_group_defaults.enable_cluster_autoscaler : each.value.enable_cluster_autoscaler
-    instance_types            = each.value.instance_types == null ? var.node_group_defaults.instance_types : each.value.instance_types
-    ami_type                  = each.value.ami_type == null ? var.node_group_defaults.ami_type : each.value.ami_type
-    ami_release_version       = each.value.ami_release_version == null ? var.node_group_defaults.ami_release_version : each.value.ami_release_version
-    kubernetes_version        = each.value.kubernetes_version == null ? local.node_group_default_kubernetes_version : each.value.kubernetes_version
-    kubernetes_labels         = each.value.kubernetes_labels == null ? var.node_group_defaults.kubernetes_labels : each.value.kubernetes_labels
-    kubernetes_taints         = each.value.kubernetes_taints == null ? var.node_group_defaults.kubernetes_taints : each.value.kubernetes_taints
-    resources_to_tag          = each.value.resources_to_tag == null ? var.node_group_defaults.resources_to_tag : each.value.resources_to_tag
-    subnet_type_tag_key       = var.subnet_type_tag_key
-    vpc_id                    = local.vpc_id
-
-    # See "Ensure ordering of resource creation" comment above for explanation
-    # of "module_depends_on"
-    module_depends_on = module.eks_cluster.kubernetes_config_map_id
-  } : null
+  workers_role_arns = local.worker_role_arns
 
   context = module.this.context
 }

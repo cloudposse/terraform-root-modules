@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 0.13"
+  required_version = ">= 0.13.0"
 
   required_providers {
     aws = {
@@ -13,6 +13,14 @@ terraform {
     local = {
       source  = "hashicorp/local"
       version = ">= 1.3"
+    }
+    spotinst = {
+      source  = "spotinst/spotinst"
+      version = ">= 1.30"
+    }
+    utils = {
+      source  = "cloudposse/utils"
+      version = ">= 0.3.0"
     }
   }
 }

@@ -56,13 +56,19 @@ variable "apply_config_map_aws_auth" {
 }
 
 variable "map_additional_aws_accounts" {
-  description = "Additional AWS account numbers to add to `config-map-aws-auth` ConfigMap"
+  description = "Additional AWS account numbers to add to `aws-auth` ConfigMap"
+  type        = list(string)
+  default     = []
+}
+
+variable "map_additional_worker_roles" {
+  description = "AWS IAM Role ARNs of worker nodes to add to `aws-auth` ConfigMap"
   type        = list(string)
   default     = []
 }
 
 variable "primary_iam_roles" {
-  description = "Primary IAM roles to add to `config-map-aws-auth` ConfigMap"
+  description = "Primary IAM roles to add to `aws-auth` ConfigMap"
 
   type = list(object({
     role   = string
@@ -73,7 +79,7 @@ variable "primary_iam_roles" {
 }
 
 variable "delegated_iam_roles" {
-  description = "Delegated IAM roles to add to `config-map-aws-auth` ConfigMap"
+  description = "Delegated IAM roles to add to `aws-auth` ConfigMap"
 
   type = list(object({
     role   = string
@@ -84,7 +90,7 @@ variable "delegated_iam_roles" {
 }
 
 variable "map_additional_iam_users" {
-  description = "Additional IAM users to add to `config-map-aws-auth` ConfigMap"
+  description = "Additional IAM users to add to `aws-auth` ConfigMap"
 
   type = list(object({
     userarn  = string
@@ -109,7 +115,8 @@ variable "allowed_cidr_blocks" {
 
 variable "subnet_type_tag_key" {
   type        = string
-  description = "The tag used to find the private subnets to find by availability zone"
+  default     = null
+  description = "The tag used to find the private subnets to find by availability zone. If null, will be looked up in vpc outputs."
 }
 
 variable "color" {
@@ -138,7 +145,7 @@ variable "node_groups" {
     # Disk size in GiB for worker nodes. Terraform will only perform drift detection if a configuration value is provided.
     disk_size = number
     # Whether to enable Node Group to scale its AutoScaling Group
-    enable_cluster_autoscaler = bool
+    cluster_autoscaler_enabled = bool
     # Set of instance types associated with the EKS Node Group. Terraform will only perform drift detection if a configuration value is provided.
     instance_types = list(string)
     # Type of Amazon Machine Image (AMI) associated with the EKS Node Group
@@ -160,31 +167,49 @@ variable "node_groups" {
     tags             = map(string)
   }))
   description = "List of objects defining a node group for the cluster"
-  default     = null
+  default     = {}
 }
 
 variable "node_group_defaults" {
   # Any value in the node group that is null will be replaced
   # by the value in this object, which can also be null
   type = object({
-    availability_zones        = list(string) # set to null to use var.region_availability_zones
-    attributes                = list(string)
-    create_before_destroy     = bool
-    desired_group_size        = number
-    disk_size                 = number
-    enable_cluster_autoscaler = bool
-    instance_types            = list(string)
-    ami_type                  = string
-    ami_release_version       = string
-    kubernetes_version        = string # set to null to use cluster_kubernetes_version
-    kubernetes_labels         = map(string)
-    kubernetes_taints         = map(string)
-    max_group_size            = number
-    min_group_size            = number
-    resources_to_tag          = list(string)
-    tags                      = map(string)
+    availability_zones         = list(string) # set to null to use var.region_availability_zones
+    attributes                 = list(string)
+    create_before_destroy      = bool
+    desired_group_size         = number
+    disk_size                  = number
+    cluster_autoscaler_enabled = bool
+    instance_types             = list(string)
+    ami_type                   = string
+    ami_release_version        = string
+    kubernetes_version         = string # set to null to use cluster_kubernetes_version
+    kubernetes_labels          = map(string)
+    kubernetes_taints          = map(string)
+    max_group_size             = number
+    min_group_size             = number
+    resources_to_tag           = list(string)
+    tags                       = map(string)
   })
   description = "Defaults for node groups in the cluster"
+  default = {
+    availability_zones         = null
+    attributes                 = null
+    create_before_destroy      = true
+    desired_group_size         = 1
+    disk_size                  = 20
+    cluster_autoscaler_enabled = true
+    instance_types             = ["t3.medium"]
+    ami_type                   = null
+    ami_release_version        = null
+    kubernetes_version         = null # set to null to use cluster_kubernetes_version
+    kubernetes_labels          = null
+    kubernetes_taints          = null
+    max_group_size             = 100
+    min_group_size             = null
+    resources_to_tag           = null
+    tags                       = null
+  }
 }
 
 variable "iam_roles_environment_name" {
@@ -197,4 +222,34 @@ variable "iam_primary_roles_stage_name" {
   type        = string
   description = "The name of the stage where the IAM primary roles are provisioned"
   default     = "identity"
+}
+
+variable "aws_ssm_enabled" {
+  type        = bool
+  description = "Set true to install the AWS SSM agent on each EC2 instance"
+  default     = false
+}
+
+variable "ssm_installer" {
+  type        = string
+  description = "Command to install AWS SSM agent on EC2 instance"
+  default     = "yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm\n"
+}
+
+variable "update_policy_should_roll" {
+  type        = bool
+  default     = true
+  description = "If true, roll the cluster when its configuration is updated"
+}
+
+variable "update_policy_batch_size_percentage" {
+  type        = number
+  default     = 25
+  description = "When rolling the cluster due to an update, the percentage of the instances to deploy in each batch."
+}
+
+variable "spotinst_secrets_region" {
+  type        = string
+  default     = "us-west-2"
+  description = "The region to retrieve the spotinst secrets from"
 }
