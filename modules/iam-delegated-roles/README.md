@@ -13,18 +13,18 @@ components:
   terraform:
     iam-delegated-roles:
       vars:
-        exclude_roles: [ "helm" ]
+        exclude_roles: ["helm"]
         account_role_policy_arns:
           # IAM Policy ARNs to attach to each role, overriding the defaults
-          admin: [ "arn:aws:iam::aws:policy/PowerUserAccess" ]
-          ops: [ "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess" ]
-          poweruser: [ "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess" ]
-          observer: [ "arn:aws:iam::aws:policy/job-function/ViewOnlyAccess" ]
+          admin: ["arn:aws:iam::aws:policy/PowerUserAccess"]
+          ops: ["arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"]
+          poweruser: ["arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"]
+          observer: ["arn:aws:iam::aws:policy/job-function/ViewOnlyAccess"]
           # Use default for terraform
 
         trusted_primary_role_overrides:
           # Terraform in audit can wipe out logs, so access to it needs to be restricted
-          terraform: [ "admin" ]
+          terraform: ["admin"]
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -32,25 +32,31 @@ components:
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 2.0 |
-| <a name="requirement_local"></a> [local](#requirement\_local) | >= 1.3 |
-| <a name="requirement_template"></a> [template](#requirement\_template) | >= 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 0.14.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 3.32 |
+| <a name="requirement_external"></a> [external](#requirement\_external) | ~> 2.1 |
+| <a name="requirement_http"></a> [http](#requirement\_http) | ~> 2.0 |
+| <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.0 |
+| <a name="requirement_template"></a> [template](#requirement\_template) | ~> 2.2 |
+| <a name="requirement_utils"></a> [utils](#requirement\_utils) | ~> 0.3 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 3.32 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_account_map"></a> [account\_map](#module\_account\_map) | cloudposse/stack-config/yaml//modules/remote-state | 0.13.0 |
 | <a name="module_iam_roles"></a> [iam\_roles](#module\_iam\_roles) | ../account-map/modules/iam-roles |  |
-| <a name="module_label"></a> [label](#module\_label) | git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.21.0 |  |
-| <a name="module_this"></a> [this](#module\_this) | git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.21.0 |  |
+| <a name="module_label"></a> [label](#module\_label) | cloudposse/label/null | 0.24.1 |
+| <a name="module_primary_roles"></a> [primary\_roles](#module\_primary\_roles) | cloudposse/stack-config/yaml//modules/remote-state | 0.13.0 |
+| <a name="module_tfstate"></a> [tfstate](#module\_tfstate) | cloudposse/stack-config/yaml//modules/remote-state | 0.13.0 |
+| <a name="module_this"></a> [this](#module\_this) | cloudposse/label/null | 0.24.1 |
 
 ## Resources
 
@@ -68,7 +74,8 @@ components:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_account_number"></a> [account\_number](#input\_account\_number) | Account number for the target account | `string` | n/a | yes |
+| <a name="input_account_map_environment_name"></a> [account\_map\_environment\_name](#input\_account\_map\_environment\_name) | The name of the environment where `account_map` is provisioned | `string` | `"gbl"` | no |
+| <a name="input_account_map_stage_name"></a> [account\_map\_stage\_name](#input\_account\_map\_stage\_name) | The name of the stage where `account_map` is provisioned | `string` | `"root"` | no |
 | <a name="input_account_role_policy_arns"></a> [account\_role\_policy\_arns](#input\_account\_role\_policy\_arns) | Custom IAM policy ARNs to override defaults | `map(list(string))` | `{}` | no |
 | <a name="input_additional_tag_map"></a> [additional\_tag\_map](#input\_additional\_tag\_map) | Additional tags for appending to tags\_as\_list\_of\_maps. Not added to `tags`. | `map(string)` | `{}` | no |
 | <a name="input_allow_same_account_assume_role"></a> [allow\_same\_account\_assume\_role](#input\_allow\_same\_account\_assume\_role) | Set true to allow roles to assume other roles in the same account | `bool` | `false` | no |
@@ -94,6 +101,7 @@ components:
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (e.g. `map('BusinessUnit','XYZ')` | `map(string)` | `{}` | no |
 | <a name="input_tfstate_account_id"></a> [tfstate\_account\_id](#input\_tfstate\_account\_id) | The ID of the account where the Terraform remote state backend is provisioned | `string` | `""` | no |
 | <a name="input_tfstate_assume_role"></a> [tfstate\_assume\_role](#input\_tfstate\_assume\_role) | Set to false to use the caller's role to access the Terraform remote state | `bool` | `true` | no |
+| <a name="input_tfstate_backend_environment_name"></a> [tfstate\_backend\_environment\_name](#input\_tfstate\_backend\_environment\_name) | The name of the stage where the Terraform state backend is provisioned | `string` | `"gbl"` | no |
 | <a name="input_tfstate_backend_stage_name"></a> [tfstate\_backend\_stage\_name](#input\_tfstate\_backend\_stage\_name) | The name of the stage where the Terraform state backend is provisioned | `string` | `"root"` | no |
 | <a name="input_tfstate_bucket_environment_name"></a> [tfstate\_bucket\_environment\_name](#input\_tfstate\_bucket\_environment\_name) | The name of the environment for Terraform state bucket | `string` | `""` | no |
 | <a name="input_tfstate_bucket_stage_name"></a> [tfstate\_bucket\_stage\_name](#input\_tfstate\_bucket\_stage\_name) | The name of the stage for Terraform state bucket | `string` | `"root"` | no |
@@ -112,9 +120,8 @@ components:
 | <a name="output_role_name_role_arn_map"></a> [role\_name\_role\_arn\_map](#output\_role\_name\_role\_arn\_map) | Map of role names to role ARNs |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
-
 ## References
-* [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/master/modules/iam-delegated-roles) - Cloud Posse's upstream component
 
+- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/master/modules/iam-delegated-roles) - Cloud Posse's upstream component
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/component)

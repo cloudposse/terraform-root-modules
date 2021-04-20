@@ -43,18 +43,18 @@ components:
         # to access those roles. So "ops" can access "poweruser", for example.
         delegated_roles_config:
           admin:
-            role_policy_arns: [ "arn:aws:iam::aws:policy/AdministratorAccess" ]
+            role_policy_arns: ["arn:aws:iam::aws:policy/AdministratorAccess"]
             role_description: "Role with AdministratorAccess permissions"
             sso_login_enabled: true
             # list of roles in primary that can assume into this role in delegated accounts
             # primary admin can assume delegated admin
-            trusted_primary_roles: [ "admin" ]
+            trusted_primary_roles: ["admin"]
 
           ops:
-            role_policy_arns: [ "arn:aws:iam::aws:policy/PowerUserAccess" ]
+            role_policy_arns: ["arn:aws:iam::aws:policy/PowerUserAccess"]
             role_description: "Role for OPS personnel"
             sso_login_enabled: true
-            trusted_primary_roles: [ "admin", "ops" ]
+            trusted_primary_roles: ["admin", "ops"]
 
           poweruser:
             role_policy_arns:
@@ -62,7 +62,7 @@ components:
               - "delegated_assume_role"
             role_description: "Role for Power Users (read/write)"
             sso_login_enabled: true
-            trusted_primary_roles: [ "admin", "ops", "poweruser" ]
+            trusted_primary_roles: ["admin", "ops", "poweruser"]
 
           observer:
             role_policy_arns:
@@ -70,7 +70,7 @@ components:
               - "delegated_assume_role"
             role_description: "Observer (read-only) role"
             sso_login_enabled: true
-            trusted_primary_roles: [ "admin", "ops", "observer" ]
+            trusted_primary_roles: ["admin", "ops", "observer"]
 
           terraform:
             role_policy_arns:
@@ -79,7 +79,7 @@ components:
             role_description: "Role with permissions for terraform automation"
             sso_login_enabled: false
             # Terraform is too powerful a role to allow powerusers to access it
-            trusted_primary_roles: [ "admin", "ops", "cicd", "terraform" ]
+            trusted_primary_roles: ["admin", "ops", "cicd", "terraform"]
 
           helm:
             role_policy_arns:
@@ -88,17 +88,17 @@ components:
             role_description: "Role with permissions for helm automation"
             sso_login_enabled: false
             # Helm is too powerful a role to allow powerusers to access it
-            trusted_primary_roles: [ "admin", "ops", "cicd", "helm" ]
+            trusted_primary_roles: ["admin", "ops", "cicd", "helm"]
 
         # primary_roles_config is for roles that only appear in the identity account.
         # Users or services log in with one of these roles and assume
         # delegated roles in other accounts.
         primary_roles_config:
           cicd:
-            role_policy_arns: [ "cicd" ]
+            role_policy_arns: ["cicd"]
             role_description: "Role for our privileged CI/CD Runner"
             sso_login_enabled: false
-            trusted_primary_roles: [ "admin", "ops" ]
+            trusted_primary_roles: ["admin", "ops"]
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -106,24 +106,28 @@ components:
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 2.0 |
-| <a name="requirement_local"></a> [local](#requirement\_local) | >= 1.3 |
-| <a name="requirement_template"></a> [template](#requirement\_template) | >= 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 0.14.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 3.32 |
+| <a name="requirement_external"></a> [external](#requirement\_external) | ~> 2.1 |
+| <a name="requirement_http"></a> [http](#requirement\_http) | ~> 2.0 |
+| <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.0 |
+| <a name="requirement_template"></a> [template](#requirement\_template) | ~> 2.2 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 3.32 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_account_map"></a> [account\_map](#module\_account\_map) | cloudposse/stack-config/yaml//modules/remote-state | 0.13.0 |
 | <a name="module_iam_roles"></a> [iam\_roles](#module\_iam\_roles) | ../account-map/modules/iam-roles |  |
-| <a name="module_this"></a> [this](#module\_this) | git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.21.0 |  |
+| <a name="module_sso"></a> [sso](#module\_sso) | cloudposse/stack-config/yaml//modules/remote-state | 0.13.0 |
+| <a name="module_this"></a> [this](#module\_this) | cloudposse/label/null | 0.24.1 |
 
 ## Resources
 
@@ -137,7 +141,8 @@ components:
 | [aws_iam_policy_document.cicd](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.delegated_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.empty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.primary_roles_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.primary_roles_assume_blacklist](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.primary_roles_assume_whitelist](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.saml_provider_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [terraform_remote_state.account_map](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.sso](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
@@ -154,11 +159,12 @@ components:
 | <a name="input_audit_account_stage_name"></a> [audit\_account\_stage\_name](#input\_audit\_account\_stage\_name) | The name of the stage for the audit account | `string` | `"audit"` | no |
 | <a name="input_cicd_sa_roles"></a> [cicd\_sa\_roles](#input\_cicd\_sa\_roles) | A list of Role ARNs that cicd runners may start with. Will be allowed to assume xxx-gbl-identity-cicd | `list(string)` | `[]` | no |
 | <a name="input_context"></a> [context](#input\_context) | Single object for setting entire context at once.<br>See description of individual variables for details.<br>Leave string and numeric variables as `null` to use default value.<br>Individual variable settings (non-null) override settings in context object,<br>except for attributes, tags, and additional\_tag\_map, which are merged. | <pre>object({<br>    enabled             = bool<br>    namespace           = string<br>    environment         = string<br>    stage               = string<br>    name                = string<br>    delimiter           = string<br>    attributes          = list(string)<br>    tags                = map(string)<br>    additional_tag_map  = map(string)<br>    regex_replace_chars = string<br>    label_order         = list(string)<br>    id_length_limit     = number<br>  })</pre> | <pre>{<br>  "additional_tag_map": {},<br>  "attributes": [],<br>  "delimiter": null,<br>  "enabled": true,<br>  "environment": null,<br>  "id_length_limit": null,<br>  "label_order": [],<br>  "name": null,<br>  "namespace": null,<br>  "regex_replace_chars": null,<br>  "stage": null,<br>  "tags": {}<br>}</pre> | no |
+| <a name="input_default_assume_role_enabled"></a> [default\_assume\_role\_enabled](#input\_default\_assume\_role\_enabled) | Set true to allow unknown roles to assume this role (e.g. for AWS SSO) | `bool` | `false` | no |
 | <a name="input_delegated_roles_config"></a> [delegated\_roles\_config](#input\_delegated\_roles\_config) | A roles map to configure the accounts. | <pre>map(object({<br>    role_policy_arns      = list(string)<br>    role_description      = string<br>    sso_login_enabled     = bool<br>    trusted_primary_roles = list(string)<br>  }))</pre> | n/a | yes |
 | <a name="input_delimiter"></a> [delimiter](#input\_delimiter) | Delimiter to be used between `namespace`, `environment`, `stage`, `name` and `attributes`.<br>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment, e.g. 'uw2', 'us-west-2', OR 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
-| <a name="input_iam_role_max_session_duration"></a> [iam\_role\_max\_session\_duration](#input\_iam\_role\_max\_session\_duration) | The maximum session duration (in seconds) that you want to set for the IAM roles. If you do not specify a value for this setting, the default maximum of one hour is applied. This setting can have a value from 1 hour to 12 hours | `number` | `43200` | no |
+| <a name="input_iam_role_max_session_duration"></a> [iam\_role\_max\_session\_duration](#input\_iam\_role\_max\_session\_duration) | The maximum session duration (in seconds) that you want to set for the IAM roles.<br>This setting can have a value from 3600 (1 hour) to 43200 (12 hours). | `number` | `43200` | no |
 | <a name="input_id_length_limit"></a> [id\_length\_limit](#input\_id\_length\_limit) | Limit `id` to this many characters.<br>Set to `0` for unlimited length.<br>Set to `null` for default, which is `0`.<br>Does not affect `id_full`. | `number` | `null` | no |
 | <a name="input_identity_account_stage_name"></a> [identity\_account\_stage\_name](#input\_identity\_account\_stage\_name) | The name of the stage for the identity account | `string` | `"identity"` | no |
 | <a name="input_import_role_arn"></a> [import\_role\_arn](#input\_import\_role\_arn) | IAM Role ARN to use when importing a resource | `string` | `null` | no |
@@ -170,6 +176,7 @@ components:
 | <a name="input_regex_replace_chars"></a> [regex\_replace\_chars](#input\_regex\_replace\_chars) | Regex to replace chars with empty string in `namespace`, `environment`, `stage` and `name`.<br>If not set, `"/[^a-zA-Z0-9-]/"` is used to remove all characters other than hyphens, letters and digits. | `string` | `null` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS Region | `string` | n/a | yes |
 | <a name="input_root_account_stage_name"></a> [root\_account\_stage\_name](#input\_root\_account\_stage\_name) | The name of the stage for the root account | `string` | `"root"` | no |
+| <a name="input_spacelift_roles"></a> [spacelift\_roles](#input\_spacelift\_roles) | A list of Spacelift role ARNs. Will be allowed to assume ENV-gbl-identity-ops | `list(string)` | `[]` | no |
 | <a name="input_sso_environment_name"></a> [sso\_environment\_name](#input\_sso\_environment\_name) | The name of the environment where SSO is provisioned | `string` | `"gbl"` | no |
 | <a name="input_sso_stage_name"></a> [sso\_stage\_name](#input\_sso\_stage\_name) | The name of the stage where SSO is provisioned | `string` | `"identity"` | no |
 | <a name="input_stage"></a> [stage](#input\_stage) | Stage, e.g. 'prod', 'staging', 'dev', OR 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
@@ -198,9 +205,8 @@ components:
 | <a name="output_role_names"></a> [role\_names](#output\_role\_names) | List of role names |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
-
 ## References
-  * [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/master/modules/iam-primary-roles) - Cloud Posse's upstream component
 
+- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/master/modules/iam-primary-roles) - Cloud Posse's upstream component
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/component)

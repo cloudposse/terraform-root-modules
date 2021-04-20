@@ -6,8 +6,8 @@ data "aws_iam_policy_document" "tfstate" {
     effect  = "Allow"
     actions = ["s3:ListBucket", "s3:GetObject", "s3:PutObject"]
     resources = [
-      data.terraform_remote_state.tfstate[0].outputs.tfstate_backend_s3_bucket_arn,
-      "${data.terraform_remote_state.tfstate[0].outputs.tfstate_backend_s3_bucket_arn}/*"
+      module.tfstate.outputs.tfstate_backend_s3_bucket_arn,
+      "${module.tfstate.outputs.tfstate_backend_s3_bucket_arn}/*"
     ]
   }
 
@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "tfstate" {
     sid       = "TerraformStateBackendDynamoDbTable"
     effect    = "Allow"
     actions   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:DeleteItem"]
-    resources = [data.terraform_remote_state.tfstate[0].outputs.tfstate_backend_dynamodb_table_arn]
+    resources = [module.tfstate.outputs.tfstate_backend_dynamodb_table_arn]
   }
 }
 

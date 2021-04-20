@@ -1,9 +1,11 @@
 locals {
-  roles_config  = merge(var.primary_roles_config, var.delegated_roles_config)
-  role_name_map = { for role_name, config in local.roles_config : role_name => format("%s-%s", module.this.id, role_name) }
+  roles_config     = merge(var.primary_roles_config, var.delegated_roles_config)
+  role_name_map    = { for role_name, config in local.roles_config : role_name => format("%s-%s", module.this.id, role_name) }
+  configured_roles = keys(local.roles_config)
 
   # At some point we may be able to automate assume_role_restricted, so use a local
-  assume_role_restricted = var.assume_role_restricted
+  assume_role_restricted    = var.assume_role_restricted
+  assume_role_use_whitelist = !(local.assume_role_restricted && var.default_assume_role_enabled)
 
   custom_policy_map = {
     cicd                  = aws_iam_policy.cicd.arn
@@ -28,7 +30,13 @@ locals {
   allowed_assume_role_principals_map = {
     for target_role, config in local.roles_config : target_role => [
       for source_role in config.trusted_primary_roles : # aws_iam_role.default[role].arn
-      format("arn:aws:iam::%s:role/%s", var.primary_account_id, local.role_name_map[source_role]) if ! contains([target_role, "cicd"], source_role)
+      format("arn:aws:iam::%s:role/%s", var.primary_account_id, local.role_name_map[source_role]) if !contains([target_role, "cicd"], source_role)
+    ]
+  }
+  denied_assume_role_principals_map = {
+    for target_role in local.configured_roles : target_role => [
+      for source_role in local.configured_roles :
+      format("arn:aws:iam::%s:role/%s", var.primary_account_id, local.role_name_map[source_role]) if !contains(concat([target_role], local.roles_config[target_role].trusted_primary_roles), source_role)
     ]
   }
 }
@@ -48,7 +56,7 @@ data "aws_iam_policy_document" "saml_provider_assume" {
       type = "Federated"
 
       # Loop over the IDPs from the `sso` component
-      identifiers = [for name, arn in data.terraform_remote_state.sso.outputs.saml_provider_arn : arn]
+      identifiers = [for name, arn in module.sso.outputs.saml_provider_arns : arn]
     }
 
     condition {
@@ -59,11 +67,11 @@ data "aws_iam_policy_document" "saml_provider_assume" {
   }
 }
 
-data "aws_iam_policy_document" "primary_roles_assume" {
-  for_each = local.roles_config
+data "aws_iam_policy_document" "primary_roles_assume_whitelist" {
+  for_each = local.assume_role_use_whitelist ? local.roles_config : {}
 
   dynamic "statement" {
-    for_each = ! local.assume_role_restricted || length(local.allowed_assume_role_principals_map[each.key]) > 0 ? ["has_principals"] : []
+    for_each = length(local.allowed_assume_role_principals_map[each.key]) > 0 ? ["has_principals"] : []
     content {
       sid = "IdentityAccountAssume"
       actions = [
@@ -97,13 +105,102 @@ data "aws_iam_policy_document" "primary_roles_assume" {
       }
     }
   }
+
+  # Allow designated Spacelift roles to assume the Identity Ops role.
+  dynamic "statement" {
+    for_each = local.assume_role_restricted && each.key == "ops" ? ["spacelift"] : []
+    content {
+      sid = "SpaceliftOpsIdentityAssumeRole"
+      actions = [
+        "sts:AssumeRole",
+        "sts:TagSession",
+      ]
+
+      principals {
+        type        = "AWS"
+        identifiers = var.spacelift_roles
+      }
+    }
+  }
+}
+
+data "aws_iam_policy_document" "primary_roles_assume_blacklist" {
+  for_each = !local.assume_role_use_whitelist ? local.roles_config : {}
+
+  statement {
+    sid    = "IdentityAccountDefaultAssume"
+    effect = "Allow"
+    actions = [
+      "sts:AssumeRole",
+      "sts:TagSession",
+    ]
+    principals {
+      type = "AWS"
+
+      identifiers = [format("arn:aws:iam::%s:root", var.primary_account_id)]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(local.denied_assume_role_principals_map[each.key]) > 0 ? ["has_principals"] : []
+    content {
+      sid    = "IdentityAccountDeny"
+      effect = "Deny"
+      actions = [
+        "sts:AssumeRole",
+        "sts:TagSession",
+      ]
+
+      principals {
+        type = "AWS"
+
+        identifiers = local.denied_assume_role_principals_map[each.key]
+      }
+    }
+  }
+
+  # Provide a list of roles that are allowed to assume cicd roles.
+  dynamic "statement" {
+    for_each = local.assume_role_restricted && each.key == "cicd" ? var.cicd_sa_roles : []
+    content {
+      sid    = "CicdIdentityAssumeRole"
+      effect = "Allow"
+      actions = [
+        "sts:AssumeRole",
+        "sts:TagSession",
+      ]
+
+      principals {
+        type        = "AWS"
+        identifiers = [statement.value]
+      }
+    }
+  }
+
+  # Allow designated Spacelift roles to assume the Identity Ops role.
+  dynamic "statement" {
+    for_each = local.assume_role_restricted && each.key == "ops" ? ["spacelift"] : []
+    content {
+      sid = "SpaceliftOpsIdentityAssumeRole"
+      actions = [
+        "sts:AssumeRole",
+        "sts:TagSession",
+      ]
+
+      principals {
+        type = "AWS"
+
+        identifiers = var.spacelift_roles
+      }
+    }
+  }
 }
 
 data "aws_iam_policy_document" "aggregated" {
   for_each = local.roles_config
 
   source_json   = local.roles_config[each.key].sso_login_enabled ? data.aws_iam_policy_document.saml_provider_assume.json : data.aws_iam_policy_document.empty.json
-  override_json = data.aws_iam_policy_document.primary_roles_assume[each.key].json
+  override_json = local.assume_role_use_whitelist ? data.aws_iam_policy_document.primary_roles_assume_whitelist[each.key].json : data.aws_iam_policy_document.primary_roles_assume_blacklist[each.key].json
 }
 
 resource "aws_iam_role" "default" {

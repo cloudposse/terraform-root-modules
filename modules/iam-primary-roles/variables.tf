@@ -1,7 +1,10 @@
 variable "iam_role_max_session_duration" {
   type        = number
   default     = 43200
-  description = "The maximum session duration (in seconds) that you want to set for the IAM roles. If you do not specify a value for this setting, the default maximum of one hour is applied. This setting can have a value from 1 hour to 12 hours"
+  description = <<-EOT
+    The maximum session duration (in seconds) that you want to set for the IAM roles.
+    This setting can have a value from 3600 (1 hour) to 43200 (12 hours).
+    EOT
 }
 
 variable "region" {
@@ -14,6 +17,13 @@ variable "assume_role_restricted" {
   default = true
   # Set false only during cold start, when roles do not yet exist to be granted permissions
   description = "Set true to restrict (via trust policy) who can assume into a role"
+}
+
+variable "default_assume_role_enabled" {
+  type    = bool
+  default = false
+  # Set to true for AWS SSO
+  description = "Set true to allow unknown roles to assume this role (e.g. for AWS SSO)"
 }
 
 variable "primary_account_id" {
@@ -87,4 +97,10 @@ variable "audit_account_stage_name" {
   type        = string
   description = "The name of the stage for the audit account"
   default     = "audit"
+}
+
+variable "spacelift_roles" {
+  description = "A list of Spacelift role ARNs. Will be allowed to assume ENV-gbl-identity-ops"
+  type        = list(string)
+  default     = []
 }

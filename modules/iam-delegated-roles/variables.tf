@@ -9,11 +9,6 @@ variable "region" {
   description = "AWS Region"
 }
 
-variable "account_number" {
-  description = "Account number for the target account"
-  type        = string
-}
-
 variable "primary_account_id" {
   description = "Primary authentication account id used as the source for assume role"
   type        = string
@@ -48,6 +43,19 @@ variable "allow_same_account_assume_role" {
   description = "Set true to allow roles to assume other roles in the same account"
 }
 
+variable "account_map_environment_name" {
+  type        = string
+  description = "The name of the environment where `account_map` is provisioned"
+  default     = "gbl"
+}
+
+variable "account_map_stage_name" {
+  type        = string
+  description = "The name of the stage where `account_map` is provisioned"
+  default     = "root"
+}
+
+
 variable "iam_roles_environment_name" {
   type        = string
   description = "The name of the environment where the IAM roles are provisioned"
@@ -58,6 +66,12 @@ variable "iam_primary_roles_stage_name" {
   type        = string
   description = "The name of the stage where the IAM primary roles are provisioned"
   default     = "identity"
+}
+
+variable "tfstate_backend_environment_name" {
+  type        = string
+  description = "The name of the stage where the Terraform state backend is provisioned"
+  default     = "gbl"
 }
 
 variable "tfstate_backend_stage_name" {

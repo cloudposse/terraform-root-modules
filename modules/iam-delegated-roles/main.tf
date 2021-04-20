@@ -1,8 +1,9 @@
 locals {
+  account_number          = module.account_map.outputs.full_account_map[module.this.stage]
   merged_role_policy_arns = merge(var.default_account_role_policy_arns, var.account_role_policy_arns)
-  roles_config            = { for key, value in data.terraform_remote_state.primary_roles.outputs.delegated_roles_config : key => value if ! contains(var.exclude_roles, key) }
+  roles_config            = { for key, value in module.primary_roles.outputs.delegated_roles_config : key => value if !contains(var.exclude_roles, key) }
   roles_policy_arns       = { for key, value in local.roles_config : key => lookup(local.merged_role_policy_arns, key, value["role_policy_arns"]) }
-  role_name_map           = { for role_name, config in data.terraform_remote_state.primary_roles.outputs.delegated_roles_config : role_name => format("%s-%s", module.label.id, role_name) }
+  role_name_map           = { for role_name, config in module.primary_roles.outputs.delegated_roles_config : role_name => format("%s-%s", module.label.id, role_name) }
 
   trusted_primary_roles = { for key, value in local.roles_config : key => lookup(var.trusted_primary_role_overrides, key, value.trusted_primary_roles) }
 
@@ -23,7 +24,8 @@ locals {
 }
 
 module "label" {
-  source = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.21.0"
+  source  = "cloudposse/label/null"
+  version = "0.24.1" # requires Terraform >= 0.13.0
 
   name = ""
 
@@ -44,11 +46,11 @@ data "aws_iam_policy_document" "assume_role" {
 
       identifiers = concat([
         # Allow role in primary account to assume this role
-        for role in local.trusted_primary_roles[each.key] : data.terraform_remote_state.primary_roles.outputs.role_name_role_arn_map[role]
+        for role in local.trusted_primary_roles[each.key] : module.primary_roles.outputs.role_name_role_arn_map[role]
         ],
         var.allow_same_account_assume_role ? [
           for role in local.trusted_primary_roles[each.key] :
-          format("arn:aws:iam::%s:role/%s", var.account_number, local.role_name_map[role]) if ! contains(var.exclude_roles, role)
+          format("arn:aws:iam::%s:role/%s", local.account_number, local.role_name_map[role]) if !contains(var.exclude_roles, role)
       ] : [])
     }
   }

@@ -1,7 +1,7 @@
 locals {
-  root_account_id     = data.terraform_remote_state.account_map.outputs.full_account_map[var.root_account_stage_name]
-  identity_account_id = data.terraform_remote_state.account_map.outputs.full_account_map[var.identity_account_stage_name]
-  audit_account_id    = data.terraform_remote_state.account_map.outputs.full_account_map[var.audit_account_stage_name]
+  root_account_id     = module.account_map.outputs.full_account_map[var.root_account_stage_name]
+  identity_account_id = module.account_map.outputs.full_account_map[var.identity_account_stage_name]
+  audit_account_id    = module.account_map.outputs.full_account_map[var.audit_account_stage_name]
 }
 
 data "aws_iam_policy_document" "delegated_assume_role" {
