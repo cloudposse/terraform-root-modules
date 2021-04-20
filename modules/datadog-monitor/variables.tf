@@ -15,19 +15,25 @@ variable "alert_tags_separator" {
   default     = "\n"
 }
 
-variable "ssm_parameter_name_format" {
-  type        = string
-  default     = "/%s/%s"
-  description = "SSM parameter name format"
-}
-
-variable "ssm_path" {
-  type        = string
-  default     = "datadog"
-  description = "SSM path"
-}
-
 variable "datadog_monitors_config_paths" {
   type        = list(string)
   description = "List of paths to Datadog monitor configurations"
+}
+
+variable "secrets_store_type" {
+  type        = string
+  description = "Secret store type for Datadog API and app keys. Valid values: `SSM`, `ASM`"
+  default     = "ASM"
+}
+
+variable "datadog_api_secret_key" {
+  type        = string
+  description = "The key of the Datadog API secret"
+  default     = "datadog/datadog_api_key"
+}
+
+variable "datadog_app_secret_key" {
+  type        = string
+  description = "The key of the Datadog Application secret"
+  default     = "datadog/datadog_app_key"
 }

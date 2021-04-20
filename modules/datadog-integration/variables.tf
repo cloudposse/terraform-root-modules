@@ -39,14 +39,20 @@ variable "account_specific_namespace_rules" {
   default     = {}
 }
 
-variable "ssm_parameter_name_format" {
+variable "secrets_store_type" {
   type        = string
-  default     = "/%s/%s"
-  description = "SSM parameter name format"
+  description = "Secret store type for Datadog API and app keys. Valid values: `SSM`, `ASM`"
+  default     = "ASM"
 }
 
-variable "ssm_path" {
+variable "datadog_api_secret_key" {
   type        = string
-  default     = "datadog"
-  description = "SSM path"
+  description = "The key of the Datadog API secret"
+  default     = "datadog/datadog_api_key"
+}
+
+variable "datadog_app_secret_key" {
+  type        = string
+  description = "The key of the Datadog Application secret"
+  default     = "datadog/datadog_app_key"
 }

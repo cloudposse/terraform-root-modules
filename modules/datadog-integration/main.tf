@@ -1,5 +1,6 @@
 module "datadog_integration" {
-  source = "git::https://github.com/cloudposse/terraform-aws-datadog-integration.git?ref=tags/0.6.1"
+  source  = "cloudposse/datadog-integration/aws"
+  version = "0.6.1"
 
   datadog_aws_account_id           = var.datadog_aws_account_id
   integrations                     = var.integrations
@@ -9,4 +10,9 @@ module "datadog_integration" {
   account_specific_namespace_rules = var.account_specific_namespace_rules
 
   context = module.this.context
+}
+
+locals {
+  datadog_api_key = var.secrets_store_type == "ASM" ? data.aws_secretsmanager_secret_version.datadog_api_key[0].secret_string : data.aws_ssm_parameter.datadog_api_key[0].value
+  datadog_app_key = var.secrets_store_type == "ASM" ? data.aws_secretsmanager_secret_version.datadog_app_key[0].secret_string : data.aws_ssm_parameter.datadog_app_key[0].value
 }

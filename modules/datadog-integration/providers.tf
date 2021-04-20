@@ -1,6 +1,6 @@
 provider "datadog" {
-  api_key = data.aws_ssm_parameter.datadog_api_key.value
-  app_key = data.aws_ssm_parameter.datadog_app_key.value
+  api_key = local.datadog_api_key
+  app_key = local.datadog_app_key
 }
 
 provider "aws" {
@@ -14,9 +14,8 @@ provider "aws" {
 }
 
 module "iam_roles" {
-  source = "../account-map/modules/iam-roles"
-  stage  = var.stage
-  region = var.region
+  source  = "../account-map/modules/iam-roles"
+  context = module.this.context
 }
 
 variable "import_role_arn" {
