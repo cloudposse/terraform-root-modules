@@ -11,7 +11,6 @@ module "autoscaler" {
   context         = module.this.context
 }
 
-
 data "aws_iam_policy_document" "autoscaler" {
   statement {
     sid = "AllowToScaleEKSNodeGroupAutoScalingGroup"

@@ -1,5 +1,6 @@
 module "eks_iam_role" {
-  source = "git::https://github.com/cloudposse/terraform-aws-eks-iam-role.git?ref=tags/0.3.1"
+  source  = "cloudposse/eks-iam-role/aws"
+  version = "0.7.1"
 
   enabled = contains(var.cluster_context.service_account_list, var.service_account_name) && module.this.enabled
 

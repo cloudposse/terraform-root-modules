@@ -5,9 +5,9 @@ enabled = true
 name = "eks"
 
 standard_service_accounts = [
-  "autoscaler",
-  "cert-manager",
-  "external-dns"
+  "alb-controller",
+  "external-dns",
+  "autoscaler"
 ]
 
 optional_service_accounts = []

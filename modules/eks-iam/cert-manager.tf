@@ -11,7 +11,6 @@ module "cert-manager" {
   context         = module.this.context
 }
 
-
 data "aws_iam_policy_document" "cert_manager" {
   statement {
     sid = "GrantGetChange"

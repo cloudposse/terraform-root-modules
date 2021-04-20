@@ -37,3 +37,15 @@ variable "dns_gbl_delegated_environment_name" {
   description = "The name of the environment where global `dns_delegated` is provisioned"
   default     = "gbl"
 }
+
+variable "iam_primary_roles_environment_name" {
+  type        = string
+  description = "The name of the environment where global `iam_primary_roles` is provisioned"
+  default     = "gbl"
+}
+
+variable "iam_primary_roles_stage_name" {
+  type        = string
+  description = "The name of the stage where `iam_primary_roles` is provisioned"
+  default     = "identity"
+}
