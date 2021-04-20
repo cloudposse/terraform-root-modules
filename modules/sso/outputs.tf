@@ -4,3 +4,7 @@ output "saml_provider_arns" {
   }
   description = "Map of SAML provider names to provider ARNs"
 }
+
+output "okta_api_users" {
+  value = module.okta_api_user[*]
+}

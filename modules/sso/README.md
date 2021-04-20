@@ -25,23 +25,26 @@ components:
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 2.0 |
-| <a name="requirement_local"></a> [local](#requirement\_local) | >= 1.3 |
-| <a name="requirement_template"></a> [template](#requirement\_template) | >= 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 0.14.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 3.32 |
+| <a name="requirement_external"></a> [external](#requirement\_external) | ~> 2.1 |
+| <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.1 |
+| <a name="requirement_template"></a> [template](#requirement\_template) | ~> 2.2 |
+| <a name="requirement_utils"></a> [utils](#requirement\_utils) | ~> 0.3 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 3.32 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_iam_roles"></a> [iam\_roles](#module\_iam\_roles) | ../account-map/modules/iam-roles |  |
-| <a name="module_this"></a> [this](#module\_this) | git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.21.0 |  |
+| <a name="module_okta_api_user"></a> [okta\_api\_user](#module\_okta\_api\_user) | ./modules/okta-user |  |
+| <a name="module_this"></a> [this](#module\_this) | cloudposse/label/null | 0.24.1 |
 
 ## Resources
 
@@ -83,12 +86,12 @@ components:
 
 | Name | Description |
 |------|-------------|
+| <a name="output_okta_api_users"></a> [okta\_api\_users](#output\_okta\_api\_users) | n/a |
 | <a name="output_saml_provider_arns"></a> [saml\_provider\_arns](#output\_saml\_provider\_arns) | Map of SAML provider names to provider ARNs |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
-
 ## References
-  * [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/master/modules/sso) - Cloud Posse's upstream component
 
+- [cloudposse/terraform-aws-components](https://github.com/cloudposse/terraform-aws-components/tree/master/modules/sso) - Cloud Posse's upstream component
 
 [<img src="https://cloudposse.com/logo-300x69.svg" height="32" align="right"/>](https://cpco.io/component)
