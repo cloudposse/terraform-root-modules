@@ -10,7 +10,7 @@ module "forced" {
 
 module "account_map" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.14.0"
+  version = "0.17.0"
 
   component               = "account-map"
   privileged              = var.privileged

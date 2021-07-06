@@ -1,6 +1,6 @@
 module "vpc" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "vpc"
   stack_config_local_path = "../../../stacks"
@@ -10,7 +10,7 @@ module "vpc" {
 
 module "primary_roles" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "iam-primary-roles"
   environment             = var.iam_roles_environment_name
@@ -22,7 +22,7 @@ module "primary_roles" {
 
 module "delegated_roles" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "iam-delegated-roles"
   environment             = var.iam_roles_environment_name
@@ -33,7 +33,7 @@ module "delegated_roles" {
 
 module "workers_role" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component = "eks-workers"
   defaults = {
@@ -49,7 +49,7 @@ module "workers_role" {
 # to it rather than overwrite it (specifically the aws-auth configMap)
 module "eks" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component = "eks"
   defaults = {

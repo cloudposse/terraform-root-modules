@@ -1,6 +1,6 @@
 module "eks_iam" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   for_each = var.cicd_accounts
 

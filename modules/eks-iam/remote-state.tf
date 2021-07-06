@@ -1,6 +1,6 @@
 module "eks" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "eks"
   stack_config_local_path = "../../../stacks"
@@ -10,7 +10,7 @@ module "eks" {
 
 module "account_map" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "account-map"
   environment             = var.account_map_environment_name
@@ -22,7 +22,7 @@ module "account_map" {
 
 module "dns_delegated" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "dns-delegated"
   stack_config_local_path = "../../../stacks"
@@ -32,7 +32,7 @@ module "dns_delegated" {
 
 module "dns_gbl_delegated" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "dns-delegated"
   environment             = var.dns_gbl_delegated_environment_name
@@ -43,7 +43,7 @@ module "dns_gbl_delegated" {
 
 module "iam_primary_roles" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "iam-primary-roles"
   environment             = var.iam_primary_roles_environment_name

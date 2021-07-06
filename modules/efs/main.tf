@@ -6,7 +6,7 @@ locals {
 }
 
 module "efs" {
-  source = "git::https://github.com/cloudposse/terraform-aws-efs.git?ref=tags/0.21.0"
+  source = "git::https://github.com/cloudposse/terraform-aws-efs.git?ref=tags/0.30.1"
 
   region                          = var.region
   vpc_id                          = local.vpc_id
@@ -24,7 +24,7 @@ module "efs" {
 }
 
 module "kms_key_efs" {
-  source = "git::https://github.com/cloudposse/terraform-aws-kms-key.git?ref=tags/0.7.0"
+  source = "git::https://github.com/cloudposse/terraform-aws-kms-key.git?ref=tags/0.10.0"
 
   description             = "KMS key for EFS"
   deletion_window_in_days = 10

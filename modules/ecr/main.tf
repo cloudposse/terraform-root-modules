@@ -2,6 +2,7 @@ module "full_access" {
   source = "../account-map/modules/roles-to-principals"
 
   role_map = var.read_write_account_role_map
+  region   = var.region
 
   context = module.this.context
 }
@@ -10,6 +11,7 @@ module "readonly_access" {
   source = "../account-map/modules/roles-to-principals"
 
   role_map = var.read_only_account_role_map
+  region   = var.region
 
   context = module.this.context
 }

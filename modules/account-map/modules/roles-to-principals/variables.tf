@@ -1,3 +1,8 @@
+variable "region" {
+  type        = string
+  description = "AWS Region"
+}
+
 variable "role_map" {
   type        = map(list(string))
   description = "Map of account:[role, role...]. Use `*` as role for entire account"

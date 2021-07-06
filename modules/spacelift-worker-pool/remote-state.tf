@@ -1,6 +1,6 @@
 module "account_map" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "account-map"
   environment             = var.account_map_environment_name
@@ -12,7 +12,7 @@ module "account_map" {
 
 module "ecr" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.14.0"
+  version = "0.17.0"
 
   component               = "ecr-mutable"
   stack_config_local_path = "../../../stacks"
@@ -23,7 +23,7 @@ module "ecr" {
 
 module "vpc" {
   source  = "cloudposse/stack-config/yaml//modules/remote-state"
-  version = "0.13.0"
+  version = "0.17.0"
 
   component               = "vpc"
   stack_config_local_path = "../../../stacks"
