@@ -1,3 +1,4 @@
+
 <!-- markdownlint-disable -->
 # terraform-aws-components [![Latest Release](https://img.shields.io/github/release/cloudposse/terraform-aws-components.svg)](https://github.com/cloudposse/terraform-aws-components/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
 <!-- markdownlint-restore -->
@@ -28,7 +29,6 @@
 -->
 
 This is a collection of reusable Terraform components and blueprints for provisioning reference architectures.
-
 
 ---
 
@@ -94,6 +94,7 @@ make rebuild-docs
 
 
 
+
 ## Usage
 
 
@@ -136,6 +137,7 @@ Available targets:
   help/all                            Display help for all targets
   help/short                          This help short screen
   rebuild-docs                        Rebuild README for all Terraform components
+  upstream-component                  Upstream a given component
 
 ```
 <!-- markdownlint-restore -->
@@ -174,6 +176,7 @@ Like this project? Please give it a ★ on [our GitHub](https://github.com/cloud
 Are you using this project or any of our other projects? Consider [leaving a testimonial][testimonial]. =)
 
 
+
 ## Related Projects
 
 Check out these related projects.
@@ -183,8 +186,6 @@ Check out these related projects.
 - [prod.cloudposse.co](https://github.com/cloudposse/prod.cloudposse.co) - Example Terraform Reference Architecture of a Geodesic Module for a Production Organization in AWS.
 - [staging.cloudposse.co](https://github.com/cloudposse/staging.cloudposse.co) - Example Terraform Reference Architecture of a Geodesic Module for a Staging Organization in AWS.
 - [dev.cloudposse.co](https://github.com/cloudposse/dev.cloudposse.co) - Example Terraform Reference Architecture of a Geodesic Module for a Development Sandbox Organization in AWS.
-
-
 
 
 ## References
