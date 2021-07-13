@@ -1,0 +1,40 @@
+module "s3_bucket" {
+  source  = "cloudposse/s3-bucket/aws"
+  version = "0.31.0"
+
+  user_enabled                                   = false
+  acl                                            = var.acl
+  grants                                         = var.grants
+  policy                                         = var.policy
+  force_destroy                                  = var.force_destroy
+  versioning_enabled                             = var.versioning_enabled
+  logging                                        = var.logging
+  sse_algorithm                                  = var.sse_algorithm
+  kms_master_key_arn                             = var.kms_master_key_arn
+  allow_encrypted_uploads_only                   = var.allow_encrypted_uploads_only
+  allowed_bucket_actions                         = var.allowed_bucket_actions
+  lifecycle_rule_enabled                         = var.lifecycle_rule_enabled
+  prefix                                         = var.prefix
+  noncurrent_version_glacier_transition_days     = var.noncurrent_version_glacier_transition_days
+  noncurrent_version_deeparchive_transition_days = var.noncurrent_version_deeparchive_transition_days
+  noncurrent_version_expiration_days             = var.noncurrent_version_expiration_days
+  cors_rule_inputs                               = var.cors_rule_inputs
+  standard_transition_days                       = var.standard_transition_days
+  glacier_transition_days                        = var.glacier_transition_days
+  deeparchive_transition_days                    = var.deeparchive_transition_days
+  enable_glacier_transition                      = var.enable_glacier_transition
+  enable_deeparchive_transition                  = var.enable_deeparchive_transition
+  enable_standard_ia_transition                  = var.enable_standard_ia_transition
+  enable_current_object_expiration               = var.enable_current_object_expiration
+  expiration_days                                = var.expiration_days
+  lifecycle_tags                                 = var.lifecycle_tags
+  block_public_acls                              = var.block_public_acls
+  block_public_policy                            = var.block_public_policy
+  ignore_public_acls                             = var.ignore_public_acls
+  restrict_public_buckets                        = var.restrict_public_buckets
+  s3_replication_enabled                         = var.s3_replication_enabled
+  s3_replica_bucket_arn                          = var.s3_replica_bucket_arn
+  replication_rules                              = var.replication_rules
+
+  context = module.this.context
+}
