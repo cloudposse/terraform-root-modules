@@ -18,6 +18,20 @@ output "private_subnet_cidrs" {
   description = "Private subnet CIDRs"
 }
 
+output "subnets" {
+  value = {
+    public : {
+      ids : module.subnets.public_subnet_ids
+      cidr : module.subnets.public_subnet_cidrs
+    }
+    private : {
+      ids : module.subnets.private_subnet_ids
+      cidr : module.subnets.private_subnet_cidrs
+    }
+  }
+  description = "Subnets info map"
+}
+
 output "vpc_id" {
   value       = module.vpc.vpc_id
   description = "VPC ID"
@@ -28,6 +42,16 @@ output "vpc_cidr" {
   description = "VPC CIDR"
 }
 
+output "vpc" {
+  value = {
+    id : module.vpc.vpc_id
+    cidr : module.vpc.vpc_cidr_block
+    subnet_type_tag_key : var.subnet_type_tag_key
+    subnet_type_tag_value_format : var.subnet_type_tag_value_format
+  }
+  description = "VPC info map"
+}
+
 output "private_route_table_ids" {
   value       = module.subnets.private_route_table_ids
   description = "Private subnet route table IDs"
@@ -36,6 +60,18 @@ output "private_route_table_ids" {
 output "public_route_table_ids" {
   value       = module.subnets.public_route_table_ids
   description = "Public subnet route table IDs"
+}
+
+output "route_tables" {
+  value = {
+    public : {
+      ids : module.subnets.public_route_table_ids
+    }
+    private : {
+      ids : module.subnets.private_route_table_ids
+    }
+  }
+  description = "Route tables info map"
 }
 
 output "nat_gateway_ids" {

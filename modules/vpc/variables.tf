@@ -58,3 +58,27 @@ variable "max_subnet_count" {
   default     = 0
   description = "Sets the maximum amount of subnets to deploy. 0 will deploy a subnet for every provided availability zone (in `region_availability_zones` variable) within the region"
 }
+
+variable "vpc_flow_logs_enabled" {
+  type        = bool
+  description = "Enable or disable the VPC Flow Logs"
+  default     = true
+}
+
+variable "vpc_flow_logs_destination" {
+  type        = string
+  description = "The destination for the VPC Flow Logs. e.g. An S3 Bucket ARN"
+  default     = null
+}
+
+variable "vpc_flow_logs_traffic_type" {
+  type        = string
+  description = "The type of traffic to capture. Valid values: `ACCEPT`, `REJECT`, `ALL`"
+  default     = "ALL"
+}
+
+variable "vpc_flow_logs_log_destination_type" {
+  type        = string
+  description = "he type of the logging destination. Valid values: `cloud-watch-logs`, `s3`"
+  default     = "s3"
+}

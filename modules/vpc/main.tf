@@ -2,7 +2,8 @@ locals {
   # The usage of the specific kubernetes.io/cluster/* resource tags below are required
   # for EKS and Kubernetes to discover and manage networking resources
   # https://www.terraform.io/docs/providers/aws/guides/eks-getting-started.html#base-vpc-networking
-  tags = map(format("kubernetes.io/cluster/%s-%s-%s-eks-cluster", module.this.namespace, module.this.environment, module.this.stage), "shared")
+  cluster_tag_key = format("kubernetes.io/cluster/%s-%s-%s-eks-cluster", module.this.namespace, module.this.environment, module.this.stage)
+  tags            = tomap({ (local.cluster_tag_key) = "shared" })
 
   availability_zones = length(var.availability_zones) > 0 ? var.availability_zones : var.region_availability_zones
 
@@ -14,7 +15,8 @@ locals {
 }
 
 module "vpc" {
-  source = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.18.0"
+  source  = "cloudposse/vpc/aws"
+  version = "0.26.1"
 
   tags       = local.tags
   cidr_block = var.cidr_block
@@ -22,6 +24,7 @@ module "vpc" {
   context = module.this.context
 }
 
+# required tags to make ALB ingress work https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html
 # https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html
 locals {
   public_subnets_additional_tags = {
@@ -34,7 +37,8 @@ locals {
 }
 
 module "subnets" {
-  source = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.31.0"
+  source  = "cloudposse/dynamic-subnets/aws"
+  version = "0.39.3"
 
   tags = local.tags
 
