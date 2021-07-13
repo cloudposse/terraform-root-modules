@@ -7,7 +7,7 @@ locals {
 
 module "spacelift" {
   source  = "cloudposse/cloud-infrastructure-automation/spacelift"
-  version = "0.10.2"
+  version = "0.11.1"
 
   branch             = var.git_branch
   components_path    = "components/terraform"
