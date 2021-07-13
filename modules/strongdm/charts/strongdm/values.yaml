@@ -1,0 +1,12 @@
+# Default values for kube-dashboard.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+ssh_role: "ssh-user"
+image:
+  repository: "quay.io/sdmrepo/relay"
+  tag: "latest"
+  pullPolicy: "Always"
+service:
+  type: LoadBalancer
+  externalPort: 5000
+  internalPort: 5000

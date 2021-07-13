@@ -1,0 +1,87 @@
+{{- if index .Values "node" }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: strongdm-node
+spec:
+  selector:
+    matchLabels:
+      name: strongdm-node
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        name: strongdm-node
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      priorityClassName: system-node-critical
+      {{- with .Values.strongdmNodeTolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8}}
+      {{- end }}
+      containers:
+      - name: strongdm-node-register
+        image: quay.io/sdmrepo/client:latest
+        imagePullPolicy: IfNotPresent
+        command: [ "/bin/bash", "-c" ]
+        args: [ "/etc/strongdm/sdm-node-install verbose; sleep infinity" ]
+        env:
+        - name: SDM_ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: sdm-node
+              key: token
+        - name: MY_HOST_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        lifecycle:
+          # Note: The preStop hook of a DaemonSet pod is only called in the rare case
+          # of the DaemonSet being upgraded. It is notably NOT called when the node is shut down.
+          preStop:
+            exec:
+              command: ["/etc/strongdm/sdm-node-uninstall"]
+        securityContext:
+          runAsUser: 0
+          privileged: true
+        livenessProbe:
+          exec:
+            # Note: Before Kubernetes 1.20, the field timeoutSeconds was not respected for exec probes:
+            # probes continued running indefinitely, even past their configured deadline,
+            # until a result was returned, so we use the "timeout" command explicitly.
+            command:
+            - /usr/bin/timeout
+            - --verbose
+            - --kill-after=9
+            - {{ .Values.node.install_timeout_seconds | quote }}
+            - /etc/strongdm/sdm-node-install
+          initialDelaySeconds: 5
+          periodSeconds: {{ .Values.node.install_healthcheck_period_seconds }}
+          timeoutSeconds: {{ .Values.node.install_timeout_seconds }}
+        resources:
+          limits:
+            memory: 64Mi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/strongdm
+        - name: authorized-keys
+          mountPath: /opt/authorized_keys
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: config
+        configMap:
+          name: sdm-node
+          defaultMode: 0777
+      - name: authorized-keys
+        hostPath:
+          path: /home/ec2-user/.ssh/authorized_keys
+          type: File
+{{- end }}

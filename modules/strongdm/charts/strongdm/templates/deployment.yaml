@@ -1,0 +1,59 @@
+{{- if index .Values "relayToken" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "sdm.labels" . | nindent 4 }}
+  name: {{ include "sdm.fullname" . }}
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      {{- include "sdm.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        {{- include "sdm.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: sdm-relay
+        {{- with .Values.image }}
+        image: "{{.repository}}{{- if (.tag) -}}:{{ .tag }}{{- end -}}{{- if (.digest) -}}@{{.digest}}{{- end -}}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: SDM_ORCHESTRATOR_PROBES
+          value: ":9090"
+        - name: SDM_RELAY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "sdm.fullname" . }}
+              key: token
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 9090
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchExpressions:
+                {{- include "sdm.affinityMatchExpressions" . | nindent 18 }}
+
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: "failure-domain.beta.kubernetes.io/zone"
+              labelSelector:
+                matchExpressions:
+                  {{- include "sdm.affinityMatchExpressions" . | nindent 18 }}
+{{- end }}

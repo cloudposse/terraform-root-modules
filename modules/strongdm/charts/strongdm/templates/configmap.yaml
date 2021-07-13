@@ -1,0 +1,64 @@
+{{- if index .Values "node" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sdm-node
+data:
+  sdm-node-install: |
+    #!/bin/bash
+
+    set -e -o pipefail
+
+    [[ "$1" =~ verbose ]] && set -x
+
+    SDM_SSH_KEY_ID=sdm-ssh-server
+    KEY_FILE=/opt/authorized_keys
+    SHORT_HOST_NAME=$(printf "%s" "$MY_HOST_NAME" | cut -d. -f 1)
+
+    if grep -q $SDM_SSH_KEY_ID $KEY_FILE; then
+      # We found what looks like an SDM SSH key in the authorized key file.
+      # Make sure it is the currently registered key.
+      key=$(grep $SDM_SSH_KEY_ID $KEY_FILE | cut -d' ' -f 1-2)
+      if sdm admin ssh list --filter "name:${SHORT_HOST_NAME}" -j | grep -q "$key"; then
+        echo "SSH server ${SHORT_HOST_NAME} already registered, skipping"
+        exit 0
+      fi
+    fi
+
+    if [[ ! -w $KEY_FILE ]]; then
+      echo "Authorized key file $KEY_FILE is not writable" >&2
+      exit 1;
+    fi
+
+    # remove existing sdm key
+    grep -v "$SDM_SSH_KEY_ID" "$KEY_FILE" > /tmp/authorized_keys || true
+    cat /tmp/authorized_keys > "$KEY_FILE"
+
+    # Wait (total timeout minus 10 seconds) for sdm listener to start
+    i=10
+    until sdm status; do
+      let i+=1
+      if (( $i > {{ .Values.node.install_timeout_seconds }} )); then
+        echo "SDM listener failed to start" >&2
+        exit 2
+      fi
+      sleep 1
+    done
+
+    # Stop logging to stdout so we can cleanly get the SSH key
+    unset SDM_DOCKERIZED
+
+    printf "%s %s\n" "$(sdm admin ssh add "${SHORT_HOST_NAME}" "ec2-user@${MY_HOST_IP}" -p)" "$SDM_SSH_KEY_ID" >> "$KEY_FILE"
+    SDM_DOCKERIZED=true
+
+    sdm admin roles grant "${SHORT_HOST_NAME}" "{{- .Values.ssh_role -}}"
+
+  sdm-node-uninstall: |
+    #!/bin/bash
+
+    set -x
+
+    SHORT_HOST_NAME=$(printf "%s" "$MY_HOST_NAME" | cut -d. -f 1)
+    sdm admin ssh delete "${SHORT_HOST_NAME}"
+
+{{- end }}
