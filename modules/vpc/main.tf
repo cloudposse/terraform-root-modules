@@ -14,7 +14,8 @@ locals {
 }
 
 module "vpc" {
-  source = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.18.0"
+  source  = "cloudposse/vpc/aws"
+  version = "0.26.1"
 
   tags       = local.tags
   cidr_block = var.cidr_block
@@ -34,7 +35,8 @@ locals {
 }
 
 module "subnets" {
-  source = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.31.0"
+  source  = "cloudposse/dynamic-subnets/aws"
+  version = "0.39.3"
 
   tags = local.tags
 
