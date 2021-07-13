@@ -1,0 +1,53 @@
+name: github-pages-deployment
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+  release:
+    types:
+    - published
+
+defaults:
+  run:
+    shell: bash +e -x -o pipefail {0}
+
+jobs:
+  github-pages-deploy:
+    name: "Build Hugo Site and Deploy to GitHub Pages"
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAGES_REPO: https://github.com/cloudposse/terraform-aws-components
+      GITHUB_PAGES_PUSH_BRANCH: docs
+      GITHUB_PAGES_PUSH_PATH: github_pages
+    steps:
+    - name: "Checkout source code at current commit"
+      uses: actions/checkout@v2
+    - name: "Build Hugo Static Site"
+      uses: cloudposse/docs/actions/publish-github-pages@publish-gh-pages-python
+      with:
+        css: |
+          body {
+            >.__slackin {
+              z-index: 2;
+            }
+            font-size: 1.1rem;
+          }
+        content: docs,modules
+        config: |
+          .baseURL="https://cloudposse.github.io/terraform-aws-components"
+          .enableEmoji="absolutely"
+        hugo_url: https://cloudposse.github.io/docs
+        github_pages_pull_branch: github-pages-docs
+        github_pages_repo: ${{ env.GITHUB_PAGES_REPO }}
+        github_pages_push_branch: ${{ env.GITHUB_PAGES_PUSH_BRANCH }}
+        github_pages_push_path: ${{ env.GITHUB_PAGES_PUSH_PATH }}
+    - name: "Deploy Hugo Static Site to GitHub Pages"
+      uses: cloudposse/actions/github/git-push@0.30.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+        GITHUB_REPOSITORY: ${{ env.GITHUB_PAGES_REPO }}
+        GIT_DIRECTORY: ${{ env.GITHUB_PAGES_PUSH_PATH }}
+        GIT_BRANCH: ${{ env.GITHUB_PAGES_PUSH_BRANCH }}
