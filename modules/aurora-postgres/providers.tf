@@ -1,0 +1,22 @@
+provider "aws" {
+  region  = var.region
+  profile = coalesce(var.import_profile_name, module.iam_roles.terraform_profile_name)
+}
+
+module "iam_roles" {
+  source  = "../account-map/modules/iam-roles"
+  context = module.this.context
+}
+
+variable "import_profile_name" {
+  type        = string
+  default     = null
+  description = "AWS Profile name to use when importing a resource"
+}
+
+provider "postgresql" {
+  host      = module.aurora_postgres_cluster.master_host
+  username  = module.aurora_postgres_cluster.master_username
+  password  = local.admin_password
+  superuser = false
+}
