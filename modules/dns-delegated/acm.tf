@@ -49,4 +49,5 @@ output "certificate" {
 output "acm_ssm_parameter" {
   value       = aws_ssm_parameter.acm_arn
   description = "The SSM parameter for the ACM cert."
+  sensitive   = true # Necessary to allow plan / apply in 0.15+
 }
